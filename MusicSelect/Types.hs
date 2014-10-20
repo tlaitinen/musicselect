@@ -2,6 +2,7 @@ module MusicSelect.Types where
 
 import FuzzyTimings.WeeklySlicedTime
 import FuzzyTimings.SlicedTime
+import Data.Time
 
 type MusicPieceId = Int
 type MusicGenreId = Int
@@ -17,7 +18,7 @@ data MusicGenre = MusicGenre {
     mgSmall  :: Bool
 }
 
-data MusicFormat = MusicFormat [(MusicGenreId, Rational)]
+data MusicFormat = MusicFormat [(MusicGenreId, Weight)]
 
 data ChannelReqs = ChannelReqs {
     chId            :: ChannelId,
@@ -34,5 +35,17 @@ data Requirements = Requirements {
     reqCurrentMusic :: [MusicPieceId],
 
     -- | banned music pieces will not be selected
-    reqBanned       :: [MusicPieceId]
+    reqBannedMusic  :: [MusicPieceId],
+
+    -- | list of music pieces that should be avoided if possible
+    reqAvoidMusic   :: [MusicPieceId],
+
+    -- | planning period
+    reqPeriod       :: (Day,Day)
+}
+
+data Result = Result {
+    resToAdd    :: [MusicPieceId],
+    resToRemove :: [MusicPieceId],
+    resMissing  :: [(MusicGenreId, Int)]
 }
