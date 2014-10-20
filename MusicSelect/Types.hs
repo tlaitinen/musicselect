@@ -3,6 +3,7 @@ module MusicSelect.Types where
 import FuzzyTimings.WeeklySlicedTime
 import FuzzyTimings.SlicedTime
 import Data.Time
+import qualified Data.Map as Map
 
 type MusicPieceId = Int
 type MusicGenreId = Int
@@ -18,7 +19,7 @@ data MusicGenre = MusicGenre {
     mgSmall  :: Bool
 }
 
-data MusicFormat = MusicFormat [(MusicGenreId, Weight)]
+type MusicFormat = Map.Map MusicGenreId Weight
 
 data ChannelReqs = ChannelReqs {
     chId            :: ChannelId,
