@@ -7,8 +7,8 @@ import Data.Time
 import qualified Data.Map as Map
 import Data.List
 
-combineOnceAndWeeklyTime :: WeeklySlicedTime a -> SlicedTime a -> Day -> Day -> SlicedTime a
-combineOnceAndWeeklyTime wst st2 startDay endDay = flattenSlicedTime st3
+combineWeeklyAndOnceTime :: WeeklySlicedTime a -> SlicedTime a -> Day -> Day -> SlicedTime a
+combineWeeklyAndOnceTime wst st2 startDay endDay = flattenSlicedTime st3
     where
         st1 = implementWeeklySlicedTime wst startDay endDay
         st1WoSt2 = st1 `deleteSlicedTime` st2

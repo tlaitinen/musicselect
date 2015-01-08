@@ -1,0 +1,32 @@
+name:   musicselect
+version: 0.0.1
+license:    OtherLicense
+license-file: LICENSE
+author:  Tero Laitinen
+maintainer: Tero Laitinen
+synopsis:  
+description: 
+category:    Scheduling
+stability:   Experimental
+cabal-version: >= 1.8
+build-type:  Simple
+homepage:    https://github.com/tlaitinen/musicselect
+
+library
+    build-depends:  base >= 4.3     && < 5
+                 , time
+                 , random
+                 , containers
+                 , glpk-hs
+                 , mtl
+                 , fuzzy-timings
+                    
+    exposed-modules: 
+        MusicSelect.Types
+        MusicSelect.Solve
+        MusicSelect.Simplify
+    ghc-options: -Wall
+
+source-repository head
+    type: git
+    location: https://github.com/tlaitinen/musicselect
