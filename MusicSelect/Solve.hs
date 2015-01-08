@@ -21,6 +21,12 @@ mpVar mpId = "m" ++ show mpId
 inGenreVar :: MusicGenreId -> String
 inGenreVar mgId = "in" ++ show mgId
 
+genreOkVar :: MusicGenreId -> String
+genreOkVar mgId = "ok" ++ show mgId
+
+genreExtraVar :: MusicGenreId -> String
+genreExtraVar mgId = "extra" ++ show mgId
+
 missingVar :: MusicGenreId -> String
 missingVar mgId = "missing" ++ show mgId
 
@@ -96,6 +102,11 @@ solve reqs = do
                 equal (var (inGenreVar $ mgId mg)) $ 
                     varSum [ mpVar mpId | mpId <- mgPieces mg,
                              mpId `Set.notMember` banned ]
+
+                setVarKind (genreOkVar $ mgId mg) IntVar
+                setBounds (genreOkVar $ mgId mg) 0 1
+                -- TODO 
+                -- leq (var (genreOkVar $ mgId mg)) $             
         totalCount = sum $ map chMusicCount $ reqChannels reqs
         allMusic = map head $ L.group $ L.sort $ concatMap mgPieces $ reqMusicGenres reqs        
         (startDate, endDate) = reqPeriod reqs
