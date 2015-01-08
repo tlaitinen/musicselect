@@ -4,6 +4,7 @@
 module MusicSelect.Solve where
 
 import MusicSelect.Types
+import Data.Maybe
 import MusicSelect.Simplify
 import Data.LinearProgram
 import Control.Monad.LPMonad
@@ -102,17 +103,28 @@ solve reqs = do
                 equal (var (inGenreVar $ mgId mg)) $ 
                     varSum [ mpVar mpId | mpId <- mgPieces mg,
                              mpId `Set.notMember` banned ]
-
-                setVarKind (genreOkVar $ mgId mg) IntVar
-                setBounds (genreOkVar $ mgId mg) 0 1
-                -- TODO 
-                -- leq (var (genreOkVar $ mgId mg)) $             
+            -- indicator variable for when music genre is ok,
+            -- and variable to track the number of extra music pieces in a 
+            -- genre
+            forM_ (Map.toList musicCounts) $ \(mgId',c) -> do
+                setVarKind (genreOkVar mgId') IntVar
+                setBounds (genreOkVar mgId') 0 1
+                leqTo (linCombination [ (1, inGenreVar mgId'), 
+                                      (-c, genreOkVar mgId') ]) 0
+                setVarKind (genreExtraVar mgId') IntVar
+                setBounds (genreExtraVar mgId') 0 (genreSize mgId')
+                leqTo (linCombination [ (1, inGenreVar mgId'),
+                                        (-1, genreExtraVar mgId') ]) c
+                    
         totalCount = sum $ map chMusicCount $ reqChannels reqs
         allMusic = map head $ L.group $ L.sort $ concatMap mgPieces $ reqMusicGenres reqs        
         (startDate, endDate) = reqPeriod reqs
         banned = Set.fromList $ reqBannedMusic reqs
         current = Set.fromList $ reqCurrentMusic reqs
         musicCounts = Map.unionsWith max channelMusicCounts
+        genreSize mgId' = fromMaybe 0 $ listToMaybe [ length $ mgPieces mg |
+                                                      mg <- reqMusicGenres reqs,
+                                                      mgId mg == mgId' ]
         channelMusicCounts = [
                 musicFormatToMusicCount (chMusicCount ch) $ 
                     integrateMusicFormats $ combineWeeklyAndOnceTime
