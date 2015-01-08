@@ -42,11 +42,14 @@ avoidVar = "avoid"
 
 
 
-objFun :: MusicCounts -> LinFunc String Int
-objFun counts = do
+objFun :: [MusicGenreId] -> LinFunc String Int
+objFun mgIds = do
     
-    linCombination $ [ 
-            (-1, avoidVar)
+    linCombination $ concat [ 
+            [(100000000, genreOkVar mgId') | mgId' <- mgIds ],
+            [(-10000, avoidVar)],
+            [(100, genreExtraVar mgId') | mgId' <- mgIds ],
+            [(1, currentVar)]
         ]
 
 setBounds :: forall (m :: * -> *) v c.
@@ -77,7 +80,7 @@ solve reqs = do
     where
         lp = execLPM $ do
             setDirection Max
-            setObjective (objFun musicCounts)
+            setObjective (objFun $ Map.keys musicCounts)
             -- music piece can be selected=1 or not=0
             forM_ allMusic $ \mpId -> do
                 setVarKind (mpVar mpId) IntVar
