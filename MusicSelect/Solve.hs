@@ -31,19 +31,37 @@ mpSelectLp reqs = execLPM $ do
 
 solve :: Requirements -> IO Result 
 solve reqs = do
-    return $ Result {
-        resToAdd = [],
-        resToRemove = [],
-        resMissing = []
-    }
+    let lp = mpSelectLp reqs
+    print lp
+    res <- if null (constraints lp)
+        then return Nothing
+        else do
+            (_, mresult) <- glpSolveVars mipDefaults lp
+            print mresult
+            let res = (mresult >>= \(_,vm) -> return $ mkResult vm)
+            print res
+            return res 
+    case res of
+        Just r -> return r
+        Nothing -> return $ Result {
+                resToAdd = [],
+                resToRemove = [],
+                resMissing = []
+            }   
+            
     where
         (startDate, endDate) = reqPeriod reqs
-        channelFormats = [ 
-                integrateMusicFormats $ combineWeeklyAndOnceTime
+        channelMusicCounts = [
+                musicFormatToMusicCount (chMusicCount ch) $ 
+                    integrateMusicFormats $ combineWeeklyAndOnceTime
                                                 (chWeeklyFormats ch) 
                                                 (chOnceFormats ch)
                                                 startDate 
                                                 endDate
                 | ch <- reqChannels reqs 
             ]
-        
+        mkResult vm = Result {
+                resToAdd = [],
+                resToRemove = [],
+                resMissing = []
+            }

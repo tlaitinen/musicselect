@@ -20,6 +20,7 @@ data MusicGenre = MusicGenre {
 }
 
 type MusicFormat = Map.Map MusicGenreId Weight
+type MusicCounts = Map.Map MusicGenreId Int
 
 data ChannelReqs = ChannelReqs {
     chId            :: ChannelId,
@@ -49,4 +50,4 @@ data Result = Result {
     resToAdd    :: [MusicPieceId],
     resToRemove :: [MusicPieceId],
     resMissing  :: [(MusicGenreId, Int)]
-}
+} deriving (Show)
