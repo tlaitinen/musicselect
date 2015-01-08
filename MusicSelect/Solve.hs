@@ -4,6 +4,8 @@ import MusicSelect.Types
 import MusicSelect.Simplify
 import Data.LinearProgram
 import Control.Monad.LPMonad
+import Control.Monad
+import qualified Data.Map as Map
 
 
 mpVar :: MusicPieceId -> String
@@ -18,20 +20,15 @@ missingVar mgId = "missing" ++ show mgId
 avoidVar :: String
 avoidVar = "avoid"
 
-objFun :: Requirements -> LinFunc String Double
-objFun reqs = linCombination $ [ 
-        (-100000, avoidVar)
-    ]
-
-mpSelectLp :: Requirements -> LP String Double
-mpSelectLp reqs = execLPM $ do
-    setDirection Max 
-    setObjective (objFun reqs)
-
+objFun :: MusicCounts -> LinFunc String Double
+objFun counts = do
+    
+    linCombination $ [ 
+            (-1, avoidVar)
+        ]
 
 solve :: Requirements -> IO Result 
 solve reqs = do
-    let lp = mpSelectLp reqs
     print lp
     res <- if null (constraints lp)
         then return Nothing
@@ -50,7 +47,16 @@ solve reqs = do
             }   
             
     where
+        lp = execLPM $ do
+            setDirection Max
+            setObjective (objFun musicCounts)
+            forM_ (reqMusicGenres reqs) $ \mg -> do
+                equal (var (inGenreVar $ mgId mg)) $ 
+                    varSum [ mpVar mpId | mpId <- mgPieces mg ]
+                                            
+                
         (startDate, endDate) = reqPeriod reqs
+        musicCounts = Map.unionsWith max channelMusicCounts
         channelMusicCounts = [
                 musicFormatToMusicCount (chMusicCount ch) $ 
                     integrateMusicFormats $ combineWeeklyAndOnceTime

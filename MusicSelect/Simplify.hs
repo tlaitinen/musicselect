@@ -25,10 +25,10 @@ musicFormatToMusicCount :: Int -> MusicFormat -> MusicCounts
 musicFormatToMusicCount total mf = Map.fromList $ f total (Map.toList mf) []
     where
         totalWeights = Map.fold (+) 0 mf
-        f r ((mgId, w):xs) ys = let c = w / totalWeights * (fromIntegral total)
-                                in  f (r-floor c) xs ((mgId,floor c,c):ys)
-        f r [] ((mgId,cf,c):ys) 
-            | r > 0 && c > fromIntegral cf = (mgId, cf+1):f (r-1) [] ys
-            | otherwise = (mgId,cf):f r [] ys
+        f r ((mg, w):xs) ys = let c = w / totalWeights * (fromIntegral total)
+                                in  f (r-floor c) xs ((mg,floor c,c):ys)
+        f r [] ((mg,cf,c):ys) 
+            | r > 0 && c > fromIntegral cf = (mg, cf+1):f (r-1) [] ys
+            | otherwise = (mg,cf):f r [] ys
         f _ [] [] = []
                                     
