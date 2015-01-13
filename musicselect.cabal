@@ -27,6 +27,15 @@ library
         MusicSelect.Simplify
     ghc-options: -Wall
 
+executable test
+    build-depends:
+        musicselect,
+        fuzzy-timings
+        
+    main-is: main.hs
+    hs-source-dirs: test
+    ghc-options: -O0 -Wall
+
 source-repository head
     type: git
     location: https://github.com/tlaitinen/musicselect
