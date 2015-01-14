@@ -17,13 +17,20 @@ main = do
             reqChannels = [
                 ChannelReqs {
                     chId = 1,
-                    chMusicCount = 10,
+                    chMusicCount = 20,
                     chWeeklyFormats = fromTimeOfDaySlices [
                         (1, [ 
                                 mkTimeOfDaySlice (TimeOfDay 0 0 0)
                                                  86400
                                                  (Map.fromList [ (2,1),
                                                                  (3,1) ])
+                        ]),
+                        (2, [
+                               mkTimeOfDaySlice (TimeOfDay 0 0 0)
+                                                 86400
+                                                 (Map.fromList [ (10,19) ])
+                       
+
                         ])
                     ],
                     chOnceFormats = fromTimeSlices []
@@ -43,11 +50,11 @@ main = do
                 MusicGenre {
                     mgId = 10,
                     mgPieces = [ 10,20..50 ],
-                    mgSmall = True
+                    mgSmall = False
                 }
             ],
-            reqCurrentMusic = [12,24..50],
+            reqCurrentMusic = [1] ++ [12,24..50],
             reqBannedMusic = [],
             reqAvoidMusic = [20,40],
-            reqPeriod = (fromGregorian 2014 1 1, fromGregorian 2014 2 1)
+            reqPeriod = (fromGregorian 2014 1 6, fromGregorian 2014 1 7)
         }

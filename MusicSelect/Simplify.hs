@@ -19,7 +19,10 @@ integrateMusicFormats st = foldl' combine Map.empty mfs
     where
        mfs = [ mkFormat ts | ts <- toTimeSlices st ]
        mkFormat ts = Map.map (* (fromIntegral $ tsDuration ts)) $ tsValue ts 
-       combine mf1 mf2 = Map.unionWith (+) mf1 mf2
+       combine mf1 mf2 = Map.unionWith (+) (Map.map (/(sumMap mf1)) mf1)
+                                           (Map.map (/(sumMap mf2)) mf2)
+           where 
+              sumMap mf = Map.foldl (+) 0 mf
 
 musicFormatToMusicCount :: Int -> MusicFormat -> MusicCounts       
 musicFormatToMusicCount total mf = Map.fromList $ f total (Map.toList mf) []

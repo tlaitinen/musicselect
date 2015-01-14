@@ -42,7 +42,7 @@ avoidVar = "avoid"
 
 
 
-objFun :: [MusicGenreId] -> LinFunc String Int
+objFun :: [MusicGenreId] -> LinFunc String Double
 objFun mgIds = do
     
     linCombination $ concat [ 
@@ -62,6 +62,8 @@ solve :: Requirements -> IO Result
 solve reqs = do
     print allMusic
     print current
+    print channelMusicCounts
+    print musicCounts
     print lp
     res <- if null (constraints lp)
         then return Nothing
@@ -84,14 +86,12 @@ solve reqs = do
             setDirection Max
             setObjective (objFun $ Map.keys musicCounts)
             -- music piece can be selected=1 or not=0
-            forM_ allMusic $ \mpId -> do
-                setVarKind (mpVar mpId) IntVar
-                setBounds (mpVar mpId) 0 1
+            forM_ allMusic $ \mpId -> setVarKind (mpVar mpId) BinVar
             -- number of selected music pieces must be 
             -- less than the sum of channel music counts
             setVarKind selectedVar IntVar
             equal (var selectedVar) $ varSum $ map mpVar allMusic
-            setBounds selectedVar 0 totalCount
+            setBounds selectedVar 0 $ fromIntegral totalCount
 
             -- number of selected music pieces that are already present
             setVarKind currentVar IntVar
@@ -112,14 +112,15 @@ solve reqs = do
             -- and variable to track the number of extra music pieces in a 
             -- genre
             forM_ (Map.toList musicCounts) $ \(mgId',c) -> do
-                setVarKind (genreOkVar mgId') IntVar
+                setVarKind (genreOkVar mgId') ContVar
                 setBounds (genreOkVar mgId') 0 1
-                leqTo (linCombination [ (-1, inGenreVar mgId'), 
-                                      (c, genreOkVar mgId') ]) 0
+                leqTo (linCombination [ (-1 / fromIntegral c, inGenreVar mgId'), 
+                                      (1, genreOkVar mgId') ]) 0.0
                 setVarKind (genreExtraVar mgId') IntVar
-                setBounds (genreExtraVar mgId') (-c) totalMusicCount
+                setBounds (genreExtraVar mgId') (fromIntegral $ -c) $ fromIntegral totalMusicCount
                 equal (var (genreExtraVar mgId')) $
-                    linCombination [ (1, inGenreVar mgId'), (-c, genreOkVar mgId') ]
+                    linCombination [ (1, inGenreVar mgId'), 
+                                     (fromIntegral $ -c, genreOkVar mgId') ]
                     
         totalCount = sum $ map chMusicCount $ reqChannels reqs
         allMusic = map head $ L.group $ L.sort $ concatMap mgPieces $ reqMusicGenres reqs        
@@ -140,8 +141,22 @@ solve reqs = do
                                                 endDate
                 | ch <- reqChannels reqs 
             ]
+        mkResult :: Map.Map String Double -> Result    
         mkResult vm = Result {
-                resToAdd = [],
-                resToRemove = [],
-                resMissing = []
+                resToAdd = [ 
+                        mpId | mpId <- allMusic, 
+                               (floor $ Map.findWithDefault 0 (mpVar mpId) vm) == 1,
+                               mpId `Set.notMember` current
+                    ],
+                resToRemove = [
+                        mpId | mpId <- reqCurrentMusic reqs,
+                               (floor $ Map.findWithDefault 0 (mpVar mpId) vm) == 0
+                    ],
+                resMissing = [
+                    (mgId', c - (floor $ Map.findWithDefault 0 (inGenreVar mgId') vm))
+                        | (mgId',c) <- Map.toList musicCounts,
+                          floor (Map.findWithDefault 0 (inGenreVar mgId') vm) < c,
+                          not $ maybe False mgSmall $ 
+                              L.find ((==mgId') . mgId) $ reqMusicGenres reqs
+                ]
             }
