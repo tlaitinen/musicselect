@@ -60,18 +60,11 @@ setBounds v l u    | l == u = varEq v l
 
 solve :: Requirements -> IO Result 
 solve reqs = do
-    print allMusic
-    print current
-    print channelMusicCounts
-    print musicCounts
-    print lp
     res <- if null (constraints lp)
         then return Nothing
         else do
             (_, mresult) <- glpSolveVars mipDefaults lp
-            print mresult
             let res = (mresult >>= \(_,vm) -> return $ mkResult vm)
-            print res
             return res 
     case res of
         Just r -> return r
