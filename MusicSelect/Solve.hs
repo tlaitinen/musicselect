@@ -60,6 +60,8 @@ setBounds v l u    | l == u = varEq v l
 
 solve :: Requirements -> IO Result 
 solve reqs = do
+    print allMusic
+    print current
     print lp
     res <- if null (constraints lp)
         then return Nothing
@@ -112,15 +114,16 @@ solve reqs = do
             forM_ (Map.toList musicCounts) $ \(mgId',c) -> do
                 setVarKind (genreOkVar mgId') IntVar
                 setBounds (genreOkVar mgId') 0 1
-                leqTo (linCombination [ (1, inGenreVar mgId'), 
-                                      (-c, genreOkVar mgId') ]) 0
+                leqTo (linCombination [ (-1, inGenreVar mgId'), 
+                                      (c, genreOkVar mgId') ]) 0
                 setVarKind (genreExtraVar mgId') IntVar
-                setBounds (genreExtraVar mgId') 0 (genreSize mgId')
-                leqTo (linCombination [ (1, inGenreVar mgId'),
-                                        (-1, genreExtraVar mgId') ]) c
+                setBounds (genreExtraVar mgId') (-c) totalMusicCount
+                equal (var (genreExtraVar mgId')) $
+                    linCombination [ (1, inGenreVar mgId'), (-c, genreOkVar mgId') ]
                     
         totalCount = sum $ map chMusicCount $ reqChannels reqs
         allMusic = map head $ L.group $ L.sort $ concatMap mgPieces $ reqMusicGenres reqs        
+        totalMusicCount = length allMusic
         (startDate, endDate) = reqPeriod reqs
         banned = Set.fromList $ reqBannedMusic reqs
         current = Set.fromList $ reqCurrentMusic reqs

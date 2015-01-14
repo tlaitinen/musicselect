@@ -30,7 +30,10 @@ library
 executable test
     build-depends:
         musicselect,
-        fuzzy-timings
+        fuzzy-timings,
+        base,
+        containers,
+        time
         
     main-is: main.hs
     hs-source-dirs: test
