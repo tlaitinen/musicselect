@@ -22,15 +22,10 @@ data MusicGenre = MusicGenre {
 type MusicFormat = Map.Map MusicGenreId Weight
 type MusicCounts = Map.Map MusicGenreId Int
 
-data ChannelReqs = ChannelReqs {
-    chId            :: ChannelId,
-    chMusicCount    :: Int,
-    chWeeklyFormats :: WeeklySlicedTime MusicFormat,
-    chOnceFormats   :: SlicedTime MusicFormat
-}
-
 data Requirements = Requirements {
-    reqChannels     :: [ChannelReqs],
+    -- number of music pieces to select for each genre
+    reqCounts       :: [(MusicGenreId, Int)],
+
     reqMusicGenres  :: [MusicGenre],
 
     -- | current set of music pieces
@@ -40,10 +35,8 @@ data Requirements = Requirements {
     reqBannedMusic  :: [MusicPieceId],
 
     -- | list of music pieces that should be avoided if possible
-    reqAvoidMusic   :: [MusicPieceId],
+    reqAvoidMusic   :: [MusicPieceId]
 
-    -- | planning period
-    reqPeriod       :: (Day,Day)
 }
 
 data Result = Result {

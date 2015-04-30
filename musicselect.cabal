@@ -24,20 +24,7 @@ library
     exposed-modules: 
         MusicSelect.Types
         MusicSelect.Solve
-        MusicSelect.Simplify
     ghc-options: -Wall
-
-executable test
-    build-depends:
-        musicselect,
-        fuzzy-timings,
-        base,
-        containers,
-        time
-        
-    main-is: main.hs
-    hs-source-dirs: test
-    ghc-options: -O0 -Wall
 
 source-repository head
     type: git

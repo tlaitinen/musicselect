@@ -5,7 +5,6 @@ module MusicSelect.Solve where
 
 import MusicSelect.Types
 import Data.Maybe
-import MusicSelect.Simplify
 import Data.LinearProgram
 import Control.Monad.LPMonad
 import Control.Monad
@@ -81,7 +80,7 @@ solve reqs = do
             -- music piece can be selected=1 or not=0
             forM_ allMusic $ \mpId -> setVarKind (mpVar mpId) BinVar
             -- number of selected music pieces must be 
-            -- less than the sum of channel music counts
+            -- less than the sum of total music count
             setVarKind selectedVar IntVar
             equal (var selectedVar) $ varSum $ map mpVar allMusic
             setBounds selectedVar 0 $ fromIntegral totalCount
@@ -115,25 +114,15 @@ solve reqs = do
                     linCombination [ (1, inGenreVar mgId'), 
                                      (fromIntegral $ -c, genreOkVar mgId') ]
                     
-        totalCount = sum $ map chMusicCount $ reqChannels reqs
+        totalCount = sum $ Map.elems musicCounts
         allMusic = map head $ L.group $ L.sort $ concatMap mgPieces $ reqMusicGenres reqs        
         totalMusicCount = length allMusic
-        (startDate, endDate) = reqPeriod reqs
         banned = Set.fromList $ reqBannedMusic reqs
         current = Set.fromList $ reqCurrentMusic reqs
-        musicCounts = Map.unionsWith max channelMusicCounts
+        musicCounts = Map.fromList $ reqCounts reqs
         genreSize mgId' = fromMaybe 0 $ listToMaybe [ length $ mgPieces mg |
                                                       mg <- reqMusicGenres reqs,
                                                       mgId mg == mgId' ]
-        channelMusicCounts = [
-                musicFormatToMusicCount (chMusicCount ch) $ 
-                    integrateMusicFormats $ combineWeeklyAndOnceTime
-                                                (chWeeklyFormats ch) 
-                                                (chOnceFormats ch)
-                                                startDate 
-                                                endDate
-                | ch <- reqChannels reqs 
-            ]
         mkResult :: Map.Map String Double -> Result    
         mkResult vm = Result {
                 resToAdd = [ 
