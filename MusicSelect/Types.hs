@@ -4,10 +4,10 @@ import FuzzyTimings.WeeklySlicedTime
 import FuzzyTimings.SlicedTime
 import Data.Time
 import qualified Data.Map as Map
+import Data.Int
 
-type MusicPieceId = Int
-type MusicGenreId = Int
-type ChannelId    = Int
+type MusicPieceId = Int64
+type MusicGenreId = Int64
 type Weight       = Rational
 
 data MusicGenre = MusicGenre {

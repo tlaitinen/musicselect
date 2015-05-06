@@ -63,7 +63,7 @@ solve reqs = do
         then return Nothing
         else do
             (_, mresult) <- glpSolveVars mipDefaults lp
-            let res = (mresult >>= \(_,vm) -> return $ mkResult vm)
+            let res = mresult >>= Just . mkResult . snd
             return res 
     case res of
         Just r -> return r
